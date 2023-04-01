@@ -7,7 +7,7 @@ use {
 		routing::post,
 		Router, Server,
 	},
-	std::{fmt::Debug, net::SocketAddr, path::PathBuf},
+	std::{fmt::Debug, future::Future, net::SocketAddr, path::PathBuf, pin::Pin},
 	tokio::sync::mpsc::{self, UnboundedSender},
 	tracing::{error, info},
 };
@@ -23,6 +23,9 @@ pub struct GSIServer {
 	installed: bool,
 	/// The registered callback funtions to execute when an event fires.
 	listeners: Vec<Box<dyn FnMut(Event) + Send + Sync>>,
+	/// The registered async callback funtions to execute when an event fires.
+	async_listeners:
+		Vec<Box<dyn FnMut(Event) -> Pin<Box<dyn Future<Output = ()> + Send + Sync>> + Send + Sync>>,
 }
 
 #[allow(unused)]
@@ -43,6 +46,7 @@ impl GSIServer {
 			config,
 			installed: false,
 			listeners: Vec::new(),
+			async_listeners: Vec::new(),
 		}
 	}
 
@@ -78,6 +82,15 @@ impl GSIServer {
 		self.listeners.push(Box::new(cb));
 	}
 
+	/// Add an async event listener to this server. The `cb` callback will be executed whenever an
+	/// event fires.
+	pub fn add_async_event_listener<CB>(&mut self, cb: CB)
+	where
+		CB: FnMut(Event) -> Pin<Box<dyn Future<Output = ()> + Send + Sync>> + Send + Sync + 'static,
+	{
+		self.async_listeners.push(Box::new(cb));
+	}
+
 	/// Start the server. This will block indefinitely, so you probably want to spawn a separate
 	/// thread for this.
 	#[tracing::instrument(skip(self))]
@@ -97,6 +110,10 @@ impl GSIServer {
 		while let Some(event) = receiver.recv().await {
 			for cb in &mut self.listeners {
 				cb(event.clone());
+			}
+
+			for async_cb in &mut self.async_listeners {
+				async_cb(event.clone()).await;
 			}
 		}
 
@@ -122,7 +139,8 @@ async fn run_server(addr: SocketAddr, sender: UnboundedSender<Event>) -> Result<
 #[axum::debug_handler]
 #[tracing::instrument]
 pub async fn handle_update(
-	State(sender): State<UnboundedSender<Event>>, Json(body): Json<Event>,
+	State(sender): State<UnboundedSender<Event>>,
+	Json(body): Json<Event>,
 ) -> impl IntoResponse {
 	match sender.send(body.clone()) {
 		Ok(()) => (StatusCode::OK, Json(body)),
