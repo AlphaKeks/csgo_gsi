@@ -1,11 +1,13 @@
 [package]
-name = "csgo_gsi"
+name = "schnose_gsi"
 version = "0.1.0"
 description = "CS:GO GSI Implementation for Rust."
+categories = ["api-bindings", "asynchronous", "data-structures", "games", ""]
+keywords = ["csgo", "valve", "kreedz", "kz", "gokz"]
 authors = ["AlphaKeks <alphakeks@dawn.sh>"]
 edition = "2021"
 readme = "./README.md"
-repository = "https://github.com/AlphaKeks/csgo_gsi"
+repository = "https://github.com/AlphaKeks/schnose_gsi"
 license-file = "./LICENSE"
 publish = true
 
@@ -22,9 +24,6 @@ tokio = { version = "1", features = ["full"] }
 axum = { version = "0.6", features = ["macros"] }
 
 gokz_rs = { version = "0.18", optional = true }
-
-[dev-dependencies]
-color-eyre = "0.6"
 
 [features]
 gokz = ["dep:gokz_rs"]
