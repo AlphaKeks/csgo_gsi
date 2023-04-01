@@ -2,7 +2,7 @@
 name = "schnose_gsi"
 version = "0.1.0"
 description = "CS:GO GSI Implementation for Rust."
-categories = ["api-bindings", "asynchronous", "data-structures", "games", ""]
+categories = ["api-bindings", "asynchronous", "data-structures", "games"]
 keywords = ["csgo", "valve", "kreedz", "kz", "gokz"]
 authors = ["AlphaKeks <alphakeks@dawn.sh>"]
 edition = "2021"
