@@ -5,8 +5,9 @@ use {
 		http::StatusCode,
 		response::IntoResponse,
 		routing::post,
-		Router, Server,
+		Router,
 	},
+	axum_server::{Handle, Server},
 	std::{fmt::Debug, future::Future, net::SocketAddr, path::PathBuf, pin::Pin},
 	tokio::{
 		sync::mpsc::{self, UnboundedSender},
@@ -112,7 +113,8 @@ impl GSIServer {
 		let addr = SocketAddr::from(([127, 0, 0, 1], self.port));
 
 		info!("Starting server on {addr}.");
-		let http_handle = tokio::spawn(run_server(addr, sender));
+		let http_handle = Handle::new();
+		tokio::spawn(run_server(addr, sender, http_handle.clone()));
 
 		info!("Listening for events...");
 		let server_handle = tokio::spawn(async move {
@@ -125,12 +127,10 @@ impl GSIServer {
 					async_cb(event.clone()).await;
 				}
 			}
-		});
-
-		Ok(ServerHandle {
-			server_handle: server_handle.abort_handle(),
-			http_handle: http_handle.abort_handle(),
 		})
+		.abort_handle();
+
+		Ok(ServerHandle { server_handle, http_handle })
 	}
 }
 
@@ -138,25 +138,30 @@ impl GSIServer {
 #[derive(Debug)]
 pub struct ServerHandle {
 	server_handle: AbortHandle,
-	http_handle: AbortHandle,
+	http_handle: Handle,
 }
 
 impl ServerHandle {
 	/// Will abort the execution of both the GSI server and the HTTP server spawned by it.
 	pub fn abort(self) {
 		self.server_handle.abort();
-		self.http_handle.abort();
+		self.http_handle.shutdown();
 	}
 }
 
 /// Launches the Axum server for listening to CS:GO updates.
 #[tracing::instrument]
-async fn run_server(addr: SocketAddr, sender: UnboundedSender<Event>) -> Result<()> {
+async fn run_server(
+	addr: SocketAddr,
+	sender: UnboundedSender<Event>,
+	handle: Handle,
+) -> Result<()> {
 	let router = Router::new()
 		.route("/", post(handle_update))
 		.with_state(sender);
 
-	Server::bind(&addr)
+	Server::bind(addr)
+		.handle(handle)
 		.serve(router.into_make_service())
 		.await
 		.map_err(|_| Error::Axum)?;
@@ -164,7 +169,6 @@ async fn run_server(addr: SocketAddr, sender: UnboundedSender<Event>) -> Result<
 	Ok(())
 }
 
-#[axum::debug_handler]
 #[tracing::instrument]
 pub async fn handle_update(
 	State(sender): State<UnboundedSender<Event>>,
