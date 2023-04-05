@@ -1,6 +1,6 @@
 [package]
 name = "schnose_gsi"
-version = "0.3.0"
+version = "0.3.1"
 description = "CS:GO GSI Implementation for Rust."
 categories = ["api-bindings", "asynchronous", "data-structures", "games"]
 keywords = ["csgo", "valve", "kreedz", "kz", "gokz"]

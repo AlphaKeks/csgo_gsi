@@ -24,4 +24,4 @@ pub(crate) mod install_dir;
 
 /// Module for the server that is listening to CS:GO game updates.
 mod server;
-pub use server::GSIServer;
+pub use server::{AsyncCallback, BoxedFuture, GSIServer, ServerHandle};

@@ -30,7 +30,10 @@ pub struct GSIServer {
 	async_listeners: Vec<AsyncCallback>,
 }
 
+/// Alias for convenience.
 pub type AsyncCallback = Box<dyn FnMut(Event) -> BoxedFuture + Send + Sync>;
+
+/// Alias for convenience.
 pub type BoxedFuture = Pin<Box<dyn Future<Output = ()> + Send + Sync>>;
 
 #[allow(unused)]
