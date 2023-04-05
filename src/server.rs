@@ -8,7 +8,10 @@ use {
 		Router, Server,
 	},
 	std::{fmt::Debug, future::Future, net::SocketAddr, path::PathBuf, pin::Pin},
-	tokio::sync::mpsc::{self, UnboundedSender},
+	tokio::{
+		sync::mpsc::{self, UnboundedSender},
+		task::AbortHandle,
+	},
 	tracing::{error, info},
 };
 
@@ -24,9 +27,11 @@ pub struct GSIServer {
 	/// The registered callback funtions to execute when an event fires.
 	listeners: Vec<Box<dyn FnMut(Event) + Send + Sync>>,
 	/// The registered async callback funtions to execute when an event fires.
-	async_listeners:
-		Vec<Box<dyn FnMut(Event) -> Pin<Box<dyn Future<Output = ()> + Send + Sync>> + Send + Sync>>,
+	async_listeners: Vec<AsyncCallback>,
 }
+
+pub type AsyncCallback = Box<dyn FnMut(Event) -> BoxedFuture + Send + Sync>;
+pub type BoxedFuture = Pin<Box<dyn Future<Output = ()> + Send + Sync>>;
 
 #[allow(unused)]
 #[cfg(test)]
@@ -86,15 +91,15 @@ impl GSIServer {
 	/// event fires.
 	pub fn add_async_event_listener<CB>(&mut self, cb: CB)
 	where
-		CB: FnMut(Event) -> Pin<Box<dyn Future<Output = ()> + Send + Sync>> + Send + Sync + 'static,
+		CB: FnMut(Event) -> BoxedFuture + Send + Sync + 'static,
 	{
 		self.async_listeners.push(Box::new(cb));
 	}
 
-	/// Start the server. This will block indefinitely, so you probably want to spawn a separate
-	/// thread for this.
+	/// Start the server. This will give you a [`ServerHandle`] that can be used to stop the server
+	/// later.
 	#[tracing::instrument(skip(self))]
-	pub async fn run(mut self) -> Result<()> {
+	pub fn run(mut self) -> Result<ServerHandle> {
 		if !self.installed {
 			self.install()?;
 		}
@@ -104,20 +109,40 @@ impl GSIServer {
 		let addr = SocketAddr::from(([127, 0, 0, 1], self.port));
 
 		info!("Starting server on {addr}.");
-		tokio::spawn(run_server(addr, sender));
+		let http_handle = tokio::spawn(run_server(addr, sender));
 
 		info!("Listening for events...");
-		while let Some(event) = receiver.recv().await {
-			for cb in &mut self.listeners {
-				cb(event.clone());
-			}
+		let server_handle = tokio::spawn(async move {
+			while let Some(event) = receiver.recv().await {
+				for cb in &mut self.listeners {
+					cb(event.clone());
+				}
 
-			for async_cb in &mut self.async_listeners {
-				async_cb(event.clone()).await;
+				for async_cb in &mut self.async_listeners {
+					async_cb(event.clone()).await;
+				}
 			}
-		}
+		});
 
-		Ok(())
+		Ok(ServerHandle {
+			server_handle: server_handle.abort_handle(),
+			http_handle: http_handle.abort_handle(),
+		})
+	}
+}
+
+/// A handle to abort a running server after spawning it.
+#[derive(Debug)]
+pub struct ServerHandle {
+	server_handle: AbortHandle,
+	http_handle: AbortHandle,
+}
+
+impl ServerHandle {
+	/// Will abort the execution of both the GSI server and the HTTP server spawned by it.
+	pub fn abort(self) {
+		self.server_handle.abort();
+		self.http_handle.abort();
 	}
 }
 

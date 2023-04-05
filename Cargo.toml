@@ -1,6 +1,6 @@
 [package]
 name = "schnose_gsi"
-version = "0.2.0"
+version = "0.3.0"
 description = "CS:GO GSI Implementation for Rust."
 categories = ["api-bindings", "asynchronous", "data-structures", "games"]
 keywords = ["csgo", "valve", "kreedz", "kz", "gokz"]
@@ -23,7 +23,7 @@ tokio = { version = "1", features = ["full"] }
 
 axum = { version = "0.6", features = ["macros"] }
 
-gokz_rs = { version = "0.18", optional = true }
+gokz_rs = { version = "0.18.4", optional = true }
 
 [features]
 gokz = ["dep:gokz_rs"]
