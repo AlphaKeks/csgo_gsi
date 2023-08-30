@@ -7,3 +7,6 @@
 #![deny(clippy::correctness, clippy::perf)]
 #![warn(clippy::complexity, clippy::cognitive_complexity, clippy::style)]
 #![warn(missing_debug_implementations, missing_docs, rust_2018_idioms)]
+
+pub mod csgo;
+pub use csgo::Event;
