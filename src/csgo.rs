@@ -37,6 +37,7 @@ pub struct GameInfo {
 	pub name: String,
 
 	/// The ID of the game. `730` in the case of CS:GO.
+	#[cfg_attr(feature = "serde", serde(rename = "appid"))]
 	pub app_id: u16,
 
 	/// The version of the game.
@@ -99,7 +100,7 @@ pub struct Player {
 /// A player's current activity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
 pub enum PlayerActivity {
 	/// The main menu.
 	Menu,
@@ -114,7 +115,6 @@ pub enum PlayerActivity {
 /// The two teams.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
 pub enum Team {
 	/// Terrorists.
 	T,
@@ -174,6 +174,7 @@ pub enum WeaponType {
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
 pub enum WeaponState {
 	Holstered,
 	Active,
@@ -193,14 +194,14 @@ pub struct PlayerState {
 	/// Whether the player is wearing a helmet.
 	pub helmet: bool,
 
-	/// How long the player will stay flashed for.
-	pub flash_duration: usize,
+	#[allow(missing_docs)] // No idea what this is.
+	pub flashed: usize,
 
 	#[allow(missing_docs)] // No idea what this is.
-	pub smoke_duration: usize,
+	pub smoked: usize,
 
-	/// How long the player will stay on fire for.
-	pub burn_duration: usize,
+	#[allow(missing_docs)] // No idea what this is.
+	pub burning: usize,
 
 	/// How much money the player currently has.
 	pub money: usize,
@@ -208,12 +209,15 @@ pub struct PlayerState {
 	/// How many kills the player currently has.
 	///
 	/// Can be negative if the player has more deaths / team kills than actual kills.
+	#[cfg_attr(feature = "serde", serde(rename = "round_kills"))]
 	pub kills: isize,
 
 	/// How many headshots the player landed this game.
+	#[cfg_attr(feature = "serde", serde(rename = "round_killhs"))]
 	pub headshots: usize,
 
 	#[allow(missing_docs)] // No idea what this is.
+	#[cfg_attr(feature = "serde", serde(rename = "equip_value"))]
 	pub equipment_value: usize,
 
 	/// How much damage the player has dealt this round.
@@ -274,8 +278,8 @@ pub struct Map {
 	#[cfg_attr(feature = "serde", serde(rename = "num_matches_to_win_series"))]
 	pub matches_to_win: usize,
 
-	/// The amount of souvenier drops on this map.
-	pub souveniers_total: usize,
+	/// The amount of souvenir drops on this map.
+	pub souvenirs_total: usize,
 
 	/// The Terrorist's current stats.
 	#[cfg_attr(feature = "serde", serde(rename = "team_t"))]
@@ -289,6 +293,7 @@ pub struct Map {
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 pub enum GameMode {
 	Competetive,
 	Casual,

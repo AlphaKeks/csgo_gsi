@@ -10,3 +10,15 @@
 
 pub mod csgo;
 pub use csgo::Event;
+
+#[cfg(feature = "server")]
+mod error;
+
+#[cfg(feature = "server")]
+pub use error::{Error, Result};
+
+#[cfg(feature = "server")]
+pub mod server;
+
+#[cfg(feature = "server")]
+pub use server::Config;
