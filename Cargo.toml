@@ -1,5 +1,6 @@
 [package]
 name = "schnose_gsi"
+description = "Library for working with CS:GO GSI"
 version = "0.5.0"
 keywords = ["csgo", "gokz", "kz", "kreedz", "valve"]
 authors = ["AlphaKeks <alphakeks@dawn.sh>"]
