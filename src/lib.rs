@@ -21,4 +21,4 @@ pub use error::{Error, Result};
 pub mod server;
 
 #[cfg(feature = "server")]
-pub use server::Config;
+pub use server::{Config, Server};
