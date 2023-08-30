@@ -1,0 +1,40 @@
+# Copyright (C) 2023  AlphaKeks <alphakeks@dawn.sh>
+#
+# This file is part of the SchnoseBot project.
+# SchnoseBot is a chatbot for CS:GO KZ.
+#
+# This is free software: you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+# the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+# Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this repository. If
+# not, see <https://www.gnu.org/licenses/>.
+
+edition = "2021"
+version = "Two"
+unstable_features = true
+
+hard_tabs = true
+
+max_width = 100
+use_small_heuristics = "Max"
+chain_width = 50
+single_line_let_else_max_width = 0
+
+imports_granularity = "One"
+group_imports = "StdExternalCrate"
+reorder_modules = false
+
+brace_style = "PreferSameLine"
+condense_wildcard_suffixes = true
+empty_item_single_line = false
+format_macro_matchers = true
+newline_style = "Unix"
+overflow_delimited_expr = true
+reorder_impl_items = true
+use_field_init_shorthand = true
+use_try_shorthand = true
