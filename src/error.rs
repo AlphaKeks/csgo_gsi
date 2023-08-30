@@ -19,6 +19,12 @@ pub enum Error {
 	/// Something went wrong saving the config file.
 	#[error("Failed to save config file to disk: {0}")]
 	SaveConfig(String),
+
+	/// Something tried to access information about the current player on an
+	/// [`Event`](crate::Event) but there was none.
+	#[cfg(feature = "gokz")]
+	#[error("Could not find current player.")]
+	NoPlayer,
 }
 
 impl From<vdf_serde::Error> for Error {

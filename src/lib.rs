@@ -22,3 +22,6 @@ pub mod server;
 
 #[cfg(feature = "server")]
 pub use server::{Config, Server};
+
+#[cfg(feature = "gokz")]
+pub mod gokz;
