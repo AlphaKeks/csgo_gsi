@@ -11,7 +11,7 @@
 pub mod csgo;
 pub use csgo::Event;
 
-#[cfg(feature = "server")]
+#[cfg(any(feature = "server", feature = "gokz"))]
 mod error;
 
 #[cfg(feature = "server")]
