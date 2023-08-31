@@ -3,13 +3,12 @@
 use {
 	crate::Result,
 	axum::{extract::State, http::StatusCode, routing::post, Json, Router},
-	std::net::SocketAddr,
+	std::{net::SocketAddr, sync::Arc},
 	tokio::sync::{broadcast, oneshot},
+	tracing::debug,
 };
 
 mod config;
-use std::sync::Arc;
-
 pub use config::{Config, ConfigBuilder, ConfigFile, Subscription};
 
 /// [`axum::Server`] wrapper to listen for GSI events in a background task.
@@ -70,6 +69,7 @@ impl Server {
 		State(state): State<Arc<Self>>,
 		Json(event): Json<crate::Event>,
 	) -> StatusCode {
+		debug!("received message");
 		_ = state.event_emitter.send(event);
 		StatusCode::OK
 	}

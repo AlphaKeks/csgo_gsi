@@ -7,7 +7,7 @@ use {
 	serde::{Deserialize, Serialize},
 };
 
-const KZ_MAP_PREFIXES: [&str; 4] = ["kz_", "skz_", "vnl_", "bkz_"];
+const KZ_MAP_PREFIXES: [&str; 6] = ["kz_", "kzpro_", "skz_", "vnl_", "bkz_", "xc_"];
 
 /// An event emitted by CS:GO, with all the KZ relevant information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
